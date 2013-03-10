@@ -32,7 +32,7 @@ $dbmap['Ingredient']['has_many']['Food'] = array('foreign_key'=>'ingredient_id',
  * array('localhost', 'database', 'root', '1234', 'mysql', true, 'collate'=>'utf8_unicode_ci', 'charset'=>'utf8'); 
  */
 
-$dbconfig['dev'] = array('localhost', 'database', 'forex', 'forex', 'mysql', true);
-$dbconfig['prod'] = $dbconfig['dev'] 
+$dbconfig['dev'] = array('localhost', 'forex', 'forex', 'forex', 'mysql', true);
+$dbconfig['prod'] = $dbconfig['dev'];
 
 ?>

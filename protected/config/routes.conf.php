@@ -58,6 +58,11 @@ $route['*']['/'] = array('MainController', 'index');
 $route['*']['/error'] = array('ErrorController', 'index');
 
 
+//forex routes
+$route['get']['/ohlc'] = array('OHLCController', 'ohlc');
+$route['get']['/ta'] = array('TechnicalAnalysisController', 'ta');
+
+
 //---------- Delete if not needed ------------
 $admin = array('admin'=>'1234');
 

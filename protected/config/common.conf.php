@@ -15,7 +15,8 @@ date_default_timezone_set('UTC');
 $config['APP_NAME'] = 'doo-forex';
 
 //For framework use. Must be defined. Use full absolute paths and end them with '/'      eg. /var/www/project/
-$config['SITE_PATH'] = realpath('..').'/'. $config['APP_NAME'] .'/';
+$config['SITE_PATH'] = '/usr/share/doo-forex/';
+//$config['SITE_PATH'] = realpath('..').'/'. $config['APP_NAME'] .'/';
 //$config['PROTECTED_FOLDER'] = 'protected/';
 $config['BASE_PATH'] = realpath('..').'/dooframework/';
 
