@@ -46,25 +46,57 @@ class OHLCController extends DooController {
 		$endTime = gmstrftime('%Y-%m-%d %H:%M:%S', $end / 1000);
 
 		//set suggested timeslice depending on range
+		//[1s,5s,10s,20s,30s,1m,5m,10m,20m,30m,1h,2h,3h,6h,1d,1w,1M]
 		if(!isset($timeslice)){
 
-			// find the right table
-			// two days range loads minute data
-			if ($range < 2 * 24 * 3600 * 1000) {
+			$stick_threshold = 300; //on screen count threshold
+
+			//seconds
+			if($range < $stick_threshold * 1000){
+				$timeslice = '1s';
+			}elseif($range < ($stick_threshold * 5 * 1000)){
+				$timeslice = '5s';
+			}elseif($range < ($stick_threshold * 10 * 1000)){
+				$timeslice = '10s';
+			}elseif($range < ($stick_threshold * 20 * 1000)){
+				$timeslice = '20s';
+			}elseif($range < ($stick_threshold * 30 * 1000)){
+				$timeslice = '30s';
+
+			//minutes
+			}elseif($range < ($stick_threshold * 60 * 1000)){
 				$timeslice = '1m';
+			}elseif($range < ($stick_threshold * 60 * 5 * 1000)){
+				$timeslice = '5m';
+			}elseif($range < ($stick_threshold * 60 * 10 * 1000)){
+				$timeslice = '10m';
+			}elseif($range < ($stick_threshold * 60 * 20 * 1000)){
+				$timeslice = '20m';
+			}elseif($range < ($stick_threshold * 60 * 30 * 1000)){
+				$timeslice = '30m';
 
-			// one month range loads hourly data
-			} elseif ($range < 31 * 24 * 3600 * 1000) {
+			//hour
+			}elseif($range < ($stick_threshold * 60 * 60 * 1000)){
 				$timeslice = '1h';
+			}elseif($range < ($stick_threshold * 60 * 60 * 2 * 1000)){
+				$timeslice = '2h';
+			}elseif($range < ($stick_threshold * 60 * 60 * 3 * 1000)){
+				$timeslice = '3h';
+			}elseif($range < ($stick_threshold * 60 * 60 * 6 * 1000)){
+				$timeslice = '6h';
 
-			// one year range loads daily data
-			} elseif ($range < 15 * 31 * 24 * 3600 * 1000) {
+			//day
+			}elseif($range < ($stick_threshold * 60 * 60 * 24 * 1000)){
 				$timeslice = '1d';
 
-			// greater range loads monthly data
-			} else {
+			//week
+			}elseif($range < ($stick_threshold * 60 * 60 * 7 * 1000)){
+				$timeslice = '1w';
+
+			//month 
+			}else{
 				$timeslice = '1M';
-			} 
+			}
 		}
 
 		//validate and parse timeslice
@@ -72,7 +104,7 @@ class OHLCController extends DooController {
 			die("Invalid timeslice parameter: $timeslice");
 		}
 
-		//timeslice duration (0,1,2,3,4,..)
+		//timeslice duration (1,2,3,4,..)
 		$ts_duration = $matches['dur'];
 		//timeslice length (s,m,h,d,w,M)
 		$ts_len = $matches['len'];
@@ -85,28 +117,28 @@ class OHLCController extends DooController {
 			$sql = "SELECT "; 
 
     			if($ts_len == 'd')
-    				$sql .= "ts, UNIX_TIMESTAMP(ts) * 1000 as datetime,";
+    				$sql .= "ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',";
  				else if($ts_len == 'w')
-					$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as datetime,";
- 					else if($ts_len == 'm')
-						$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as datetime,";
+					$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as 'datetime',";
+ 					else if($ts_len == 'M')
+						$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',";
 
 			$sql .= "
-			    MIN(low) as 'low',
-			    MAX(high) as 'high',
-			    SUBSTRING_INDEX(GROUP_CONCAT(open ORDER BY ts
+			    MIN(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_low) as 'low',
+			    MAX(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_open ORDER BY ts
 			                SEPARATOR ','),
 			            ',',
 			            + 1) AS 'open',
-			    SUBSTRING_INDEX(GROUP_CONCAT(close ORDER BY ts
+			    SUBSTRING_INDEX(GROUP_CONCAT(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_close ORDER BY ts
 			                SEPARATOR ','),
 			            ',',
 			            - 1) AS 'close',
 			    SUM(vol) as 'vol'
 			FROM
-			    eur_usd_day_bid
-			 WHERE
-			     ts BETWEEN '$startTime' and '$endTime'
+			    agg_day
+			WHERE
+				pair = '$pair' AND ts BETWEEN '$startTime' and '$endTime'
 			GROUP BY 1
 			ORDER BY datetime";
 
@@ -120,8 +152,8 @@ class OHLCController extends DooController {
 			//sql quotes
 			$sql = "SELECT 
 			    pair,
-			    FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / $ts_duration) * $ts_duration) AS timeslice,
-			    UNIX_TIMESTAMP( FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / $ts_duration) * $ts_duration) ) * 1000 as datetime,
+			    FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / $ts_duration) * $ts_duration) AS 'timeslice',
+			    UNIX_TIMESTAMP( FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / $ts_duration) * $ts_duration) ) * 1000 as 'datetime',
 			    MIN($bid_offer) as 'low',
 			    MAX($bid_offer) as 'high',
 			    SUBSTRING_INDEX(GROUP_CONCAT($bid_offer ORDER BY ts
@@ -142,38 +174,39 @@ class OHLCController extends DooController {
 
 		//hour table
 		}else if($ts_len == 'h'){
+			//3600 seconds in a hour
+			$ts_duration *= 3600;
 
-			$sql = "SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as datetime,
-			    MIN(low) as 'low',
-			    MAX(high) as 'high',
-			    SUBSTRING_INDEX(GROUP_CONCAT(open ORDER BY ts
+			$sql = "SELECT 
+				pair,
+				FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / $ts_duration) * $ts_duration) AS 'timeslice',
+			  	UNIX_TIMESTAMP(FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / $ts_duration) * $ts_duration) ) * 1000 as 'datetime',
+			    MIN(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_low) as 'low',
+			    MAX(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_open ORDER BY ts
 			                SEPARATOR ','),
 			            ',',
 			            + 1) AS 'open',
-			    SUBSTRING_INDEX(GROUP_CONCAT(close ORDER BY ts
+			    SUBSTRING_INDEX(GROUP_CONCAT(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_close ORDER BY ts
 			                SEPARATOR ','),
 			            ',',
 			            - 1) AS 'close',
 			    SUM(vol) as 'vol'
 			FROM
-			    eur_usd_hour_bid
-			 WHERE
-			     ts BETWEEN '$startTime' and '$endTime'
-			GROUP BY 1
+			    agg_hour
+			WHERE
+			     pair = '$pair' AND ts BETWEEN '$startTime' and '$endTime'
+			GROUP BY timeslice
 			ORDER BY datetime";
 		}
 
-
-//var_dump($sql); exit;
-
-		$res = Doo::db()->fetchAll($sql, array(':pair' => $pair, ':startTime' => $startTime, ':endTime' => $endTime));
 		$rows = array();
 		$res = Doo::db()->fetchAll($sql);
 //var_dump($res); exit;
 
 		foreach($res as $row){
 			extract($row);
-			$rows[] = "[$datetime,$open,$high,$low,$close]";
+			$rows[] = "[$datetime,$open,$high,$low,$close,$vol]";
 		}
 		// print it
 		header('Content-Type: text/javascript');
