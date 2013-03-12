@@ -94,13 +94,14 @@ $config['ERROR_404_ROUTE'] = '/error';
 /**
  * To enable autoloading, add directories which consist of the classes needed in your application. 
  *
- * $config['AUTOLOAD'] = array(
+ */
+$config['AUTOLOAD'] = array(
                             //internal directories, live in the app
-                            'class', 'model', 'module/example/controller', 
+                            'class', 'model',
                             //external directories, live outside the app
                             '/var/php/library/classes'
                         );
-*/
+
 
 /**
  * you can include self defined config, retrieved via Doo::conf()->variable

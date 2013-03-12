@@ -58,10 +58,15 @@ $route['*']['/'] = array('MainController', 'index');
 $route['*']['/error'] = array('ErrorController', 'index');
 
 
-//forex routes
+//forex REST routes
 $route['get']['/ohlc'] = array('OHLCController', 'ohlc');
 $route['get']['/ta'] = array('TechnicalAnalysisController', 'ta');
 
+
+//forex CLI utils
+$route['cli']['forex_update'] = array('ForexUtilCLIController', 'forex_update');
+$route['cli']['forex_loader'] = array('ForexUtilCLIController', 'forex_loader');
+$route['cli']['quote_aggregator'] = array('ForexUtilCLIController', 'quote_aggregator');
 
 //---------- Delete if not needed ------------
 $admin = array('admin'=>'1234');
