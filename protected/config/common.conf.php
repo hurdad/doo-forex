@@ -20,6 +20,9 @@ $config['SITE_PATH'] = '/usr/share/doo-forex/';
 //$config['PROTECTED_FOLDER'] = 'protected/';
 $config['BASE_PATH'] = realpath('..').'/dooframework/';
 
+//add include path
+set_include_path(get_include_path() . PATH_SEPARATOR . $config['SITE_PATH'] . 'protected/class');
+
 //for production mode use 'prod'
 $config['APP_MODE'] = 'dev';
 

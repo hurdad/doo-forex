@@ -75,7 +75,7 @@ class ForexUtilCLIController extends DooCLIController {
                         if($current_timeperiod[$pair]['hour'] != date('Y-m-d H', $time/1000) ){
 
                             $date = $current_timeperiod[$pair]['hour'] . ":00:00";
-                            $cmd = "php cli.php quote_aggregator hour $pair $date";
+                            $cmd = "php cli.php quote_aggregator hour $pair '$date'";
                             $p = new Process($cmd);
                            
                             //update
@@ -86,7 +86,7 @@ class ForexUtilCLIController extends DooCLIController {
                         if($current_timeperiod[$pair]['day'] != date('Y-m-d', $time/1000)){
                             
                             $date = $current_timeperiod[$pair]['day'];
-                            $cmd = "php cli.php quote_aggregator day $pair $date";
+                            $cmd = "php cli.php quote_aggregator day $pair '$date'";
                             $p = new Process($cmd);
 
                             //update
@@ -158,7 +158,7 @@ class ForexUtilCLIController extends DooCLIController {
     function quote_aggregator(){
 
         //check for args
-        if(count($this->arguments) != 3){
+        if(count($this->arguments) != 4){
             $this->writeLine("Usage: quote_aggregator day|hour pair datetime");
             exit;
         }
@@ -199,7 +199,7 @@ class ForexUtilCLIController extends DooCLIController {
                 COUNT(*)
             FROM
                 quotes
-            WHERE pair = '$pair' AND ts BETWEEN '$datetime' AND 'datetime' + INTERVAL 1 DAY
+            WHERE pair = '$pair' AND ts BETWEEN '$datetime' AND '$datetime' + INTERVAL 1 DAY
             GROUP BY timeslice
             ORDER BY ts)";
 
