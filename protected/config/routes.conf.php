@@ -66,6 +66,7 @@ $route['get']['/ta'] = array('TechnicalAnalysisController', 'ta');
 //forex CLI utils
 $route['cli']['forex_update'] = array('ForexUtilCLIController', 'forex_update');
 $route['cli']['forex_loader'] = array('ForexUtilCLIController', 'forex_loader');
+$route['cli']['forex_loader_month'] = array('ForexUtilCLIController', 'forex_loader_month');
 $route['cli']['quote_aggregator'] = array('ForexUtilCLIController', 'quote_aggregator');
 
 //---------- Delete if not needed ------------

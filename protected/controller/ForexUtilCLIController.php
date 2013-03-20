@@ -118,14 +118,48 @@ class ForexUtilCLIController extends DooCLIController {
         return $tokens;
     }
 
+    function forex_loader_month(){
+
+        //check for args
+        if(count($this->arguments) != 2){
+            $this->writeLine("Usage: forex_loader_month 'folderpath'");
+            exit;
+        }
+        $dir = $this->arguments[1];
+
+        if (is_dir($dir)) {  
+            if ($dh = opendir($dir)) {  
+                  
+                while (($file = readdir($dh)) !== false)   {  
+                    
+                    //check for csv
+                    if(preg_match('/\.csv/', $file)){
+                        $this->writeLine("Processing: " . $file);
+                        $cmd = "php cli.php forex_loader '$dir$file'";
+                        $p = new Process($cmd);
+                    }
+                }  
+                closedir($dh);  
+            }  
+        }
+
+        $this->writeLine("Done...!");
+    }
+
 	function forex_loader() {
 
         //check for args
         if(count($this->arguments) != 2){
-            $this->writeLine("Usage: forex_loader filepath");
+            $this->writeLine("Usage: forex_loader 'filepath'");
             exit;
         }
         $file = $this->arguments[1];
+
+        $res = Doo::db()->fetchRow("SELECT @@max_allowed_packet as max_allowed_packet");
+        $max_len = (int)$res['max_allowed_packet'] - 4096;
+
+        $sql = "INSERT IGNORE INTO quotes VALUES";
+        $values = "";
 
 		$fp = fopen($file, 'r');
 		while(!feof($fp)){
@@ -148,10 +182,20 @@ class ForexUtilCLIController extends DooCLIController {
 
 			$ms = $match['ms'];
 
-			$sql =  "INSERT INTO forex.quotes VALUES('$pair', '$mysqlts.$ms', $bid, $offer)";
-			Doo::db()>query($sql);
+            if($values) $values .= ",";
+            $values .= "('$pair', '$mysqlts.$ms', $bid, $offer)";
 
+            if(strlen($values) >= $max_len) {  
+                Doo::db()->query($sql . $values);
+                $values = "";
+            }
 		}
+
+        //any rows left over?
+        if($values) {
+            Doo::db()->query($sql . $values);
+        }
+
 		fclose($fp);
 	}
 
