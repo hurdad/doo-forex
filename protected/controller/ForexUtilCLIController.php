@@ -201,6 +201,8 @@ class ForexUtilCLIController extends DooCLIController {
 
     function quote_aggregator(){
 
+        $time_start = microtime(true);
+
         //check for args
         if(count($this->arguments) != 4){
             $this->writeLine("Usage: quote_aggregator day|hour pair datetime");
@@ -289,6 +291,15 @@ class ForexUtilCLIController extends DooCLIController {
 
         //fire off sql
         Doo::db()->query($sql);
+
+        //get script duration in seconds
+        $time_end = microtime(true);
+        $time = $time_end - $time_start;
+
+        //log completion timestamp
+        $msg = date( 'Y-m-d H:i:s') . " : COMPLETE $pair - $day_hour - $datetime - duration(s): $time" . PHP_EOL;
+        file_put_contents(Doo::conf()->SITE_PATH . "protected/log/quote_aggregator.log", $msg, FILE_APPEND | LOCK_EX);
+         
     }
 
 }

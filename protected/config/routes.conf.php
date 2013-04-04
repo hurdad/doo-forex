@@ -61,6 +61,7 @@ $route['*']['/error'] = array('ErrorController', 'index');
 //forex REST routes
 $route['get']['/ohlc'] = array('OHLCController', 'ohlc');
 $route['get']['/ta'] = array('TechnicalAnalysisController', 'ta');
+$route['get']['/live'] = array('LiveController', 'live');
 
 
 //forex CLI utils

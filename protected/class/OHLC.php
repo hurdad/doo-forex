@@ -4,6 +4,12 @@ class OHLC {
 
 	public function get_ohlc($pair, $start, $end, $bid_offer, $timeslice){
 
+		//to seconds factor lookup
+		$this->to_seconds_factor['s'] = 1;
+		$this->to_seconds_factor['m'] = 60;
+		$this->to_seconds_factor['h'] = 60 * 60;
+		$this->to_seconds_factor['d'] = 60 * 60 * 24;
+
 		//predis class
 		require 'Predis/lib/Predis/Autoloader.php';
 		Predis\Autoloader::register();
@@ -12,7 +18,7 @@ class OHLC {
 		$range = $end - $start;
 		$startTime = gmstrftime('%Y-%m-%d %H:%M:%S', $start / 1000);
 		$endTime = gmstrftime('%Y-%m-%d %H:%M:%S', $end / 1000);
-
+		
 		//set suggested timeslice depending on range
 		//[1s,5s,10s,20s,30s,1m,5m,10m,20m,30m,1h,2h,3h,6h,1d,1w,1M]
 		if(!isset($timeslice)){
@@ -102,7 +108,21 @@ class OHLC {
 		//check are not cacheing week and month
 		$is_caching = in_array($ts_len, array('w', 'M')) ? false : true;
 
+		//if no week or Month round start/end time to match candle length
+		if(!in_array($ts_len, array('w', 'M'))){
+
+			//to sec
+			$sec = $this->to_seconds_factor[$ts_len] * $ts_duration;
+
+			//round up start time, round down end time
+			$startTime = date( 'Y-m-d H:i:s', (ceil(($start / 1000) / $sec) * $sec));
+
+			//round down end time 
+			$endTime = date( 'Y-m-d H:i:s', (floor(($end / 1000) / $sec) * $sec) + $sec - 1);
+		}
+
 		//init vars
+		$time_slices = array();
 		$result = array();
 		$ranges = array();
 		$cache = array();
@@ -111,12 +131,12 @@ class OHLC {
 		$is_cache_miss = false;
 		$redis = new Predis\Client();
 		$redis_zset = "$pair:$bid_offer:$timeslice";
-
-		//get list of expected time slices
-		$time_slices = $this->buildTimeSlices($ts_len, $ts_duration, $start/1000, $end/1000);
 		
 		//query redis cache
 		if($is_caching){
+
+			//get list of expected time slices
+			$time_slices = $this->buildTimeSlices($ts_len, $ts_duration, $start/1000, $end/1000);
 
 			//check redis cache
 			$return = $redis->zrangebyscore($redis_zset, $start/1000, $end/1000, array(
@@ -156,8 +176,7 @@ class OHLC {
 		} else{
 
 			//build full range
-			$ranges[]['startTime'] = $startTime;
-			$ranges[]['endTime'] = $endTime;
+			$ranges[] = array('startTime' => $startTime, 'endTime' => $endTime);
 		}
 
 
@@ -165,7 +184,7 @@ class OHLC {
 		if(!$is_caching || $is_cache_miss){
 
 			//db
-			$return = $this->fetchMySQL($ts_len, $ts_duration, $is_cache_miss ? $cache_miss_slices : $time_slices, $ranges, $redis, $redis_zset, $pair, $bid_offer);
+			$return = $this->fetchMySQLAndCache($ts_len, $ts_duration, $is_cache_miss ? $cache_miss_slices : $time_slices, $ranges, $is_caching, $redis, $redis_zset, $pair, $bid_offer);
 
 			//add missing slices to cache obj
 			if($is_cache_miss){
@@ -190,7 +209,7 @@ class OHLC {
 		return $results;
 	}
 
-	private function fetchMySQL($ts_len, $ts_duration, $time_slices, $ranges, $redis, $redis_zset, $pair, $bid_offer){
+	private function fetchMySQLAndCache($ts_len, $ts_duration, $time_slices, $ranges, $is_caching, $redis, $redis_zset, $pair, $bid_offer){
 
 		//build SQL range
 		$range_sql = array();
@@ -206,12 +225,12 @@ class OHLC {
 	
 			$sql = "SELECT "; 
 
-    			if($ts_len == 'd')
-    				$sql .= "ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',";
- 				else if($ts_len == 'w')
-					$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as 'datetime',";
- 					else if($ts_len == 'M')
-						$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',";
+			if($ts_len == 'd')
+				$sql .= "ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',";
+				else if($ts_len == 'w')
+				$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as 'datetime',";
+					else if($ts_len == 'M')
+					$sql .= "ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',";
 
 			$sql .= "
 			    MIN(" . ($bid_offer == 'bid' ? 'bid' : 'offer') . "_low) as 'low',
@@ -293,86 +312,106 @@ class OHLC {
 			ORDER BY datetime";
 		}
 
-		//var_dump($sql); exit;
+		//log
+		file_put_contents(Doo::conf()->SITE_PATH . "protected/log/sql.log", date( 'Y-m-d H:i:s') . " : " . $sql . PHP_EOL, FILE_APPEND | LOCK_EX);
+
 		//query database
-		$rows = array();
 		$res = Doo::db()->fetchAll($sql);
 
-		//save to redis
-		$pipe = $redis->pipeline();
-		foreach($res as $row){
-			extract($row);
+		//only save to redis if we are cacheing
+		if($is_caching){
+		
 			//save to redis
-			$pipe->zadd($redis_zset, $datetime/1000, "[$datetime,$open,$high,$low,$close,$vol]");
+			$pipe = $redis->pipeline();
+			foreach($res as $row){
+				extract($row);
 
-			//remove calculated timeslices
-			unset($time_slices[$datetime/1000]);
-		}
-		$replies = $pipe->execute();
+				//remove calculated timeslices
+				if(isset($time_slices[$datetime/1000])){
+					unset($time_slices[$datetime/1000]);
 
-		//save remaining timeslices
-		$pipe = $redis->pipeline();
-		foreach($time_slices as $key => $val){
-			$pipe->zadd('empty:' . $redis_zset, $key, $key);
+					//save to redis
+					$pipe->zadd($redis_zset, $datetime/1000, "[$datetime,$open,$high,$low,$close,$vol]");
+				}
+			}
+			$replies = $pipe->execute();
+
+			//save remaining timeslices
+			$pipe = $redis->pipeline();
+			foreach($time_slices as $key => $val){
+				$pipe->zadd('empty:' . $redis_zset, $key, $val['start'] . " - " . $val['end']);
+			}
+			$replies = $pipe->execute();
 		}
-		$replies = $pipe->execute();
 
 		//save
 		return $res;
 
 	}
 
-	//$start and $end in unixtimestamp
+	//$start and $end in unixtimestamp [not used for week | month]
 	private function buildTimeSlices($ts_len, $ts_duration, $start, $end){
-		
-		//to seconds
-		$to_seconds_factor['s'] = 1;
-		$to_seconds_factor['m'] = 60;
-		$to_seconds_factor['h'] = 60 * 60;
-		$to_seconds_factor['d'] = 60 * 60 * 24;
 
-		$sec = $to_seconds_factor[$ts_len] * $ts_duration;
-		$val = floor($start / $sec) * $sec;
-		
+		if(in_array($ts_len, array('w', 'M'))) return array();
+
+		//to seconds
+		$sec = $this->to_seconds_factor[$ts_len] * $ts_duration;
+
+		//round up start
+		$val = ceil($start / $sec) * $sec;
+		//round down end
+		$end = floor($end / $sec) * $sec;
+
+		//check if end of 'end' is past current time
+		if(($end + $sec - 1) > time()){
+			//take time() timeslice and move back one timeslice
+			$end = (floor(time() / $sec) * $sec) - $sec;
+		}
+
 		$data = array();
-		while($val < $end){
+		while($val <= $end){
 
 			if($val >= $start)
-				$data[$val] =  date( 'Y-m-d H:i:s', $val);
+				$data[$val] =  array('start' => date( 'Y-m-d H:i:s', $val), 'end' => date( 'Y-m-d H:i:s', $val + $sec - 1));
 			$val += $sec;
 		}
 
 		return $data;
 	}
 
+	//convert timeslice array to ranges for sql [not used for week | month]
 	private function buildRangeFromMissingTimeSlices($ts_len, $ts_duration, $time_slices){
+
+		if(in_array($ts_len, array('w', 'M'))) return array();
 
 		//range contains keys with missing ranges
 		$ranges = array();
 		if(count($time_slices) > 0){
+
 			//to seconds
-			$to_seconds_factor['s'] = 1;
-			$to_seconds_factor['m'] = 60;
-			$to_seconds_factor['h'] = 60 * 60;
-			$to_seconds_factor['d'] = 60 * 60 * 24;
+			$sec = $this->to_seconds_factor[$ts_len] * $ts_duration;
 
 			$time_slice_keys = array_keys($time_slices);
-			$start = $time_slices[$time_slice_keys[0]];
 			$range_count = 0;
 			$ranges[$range_count] = array();
-			array_push($ranges[$range_count], $start);
-			$sec = $to_seconds_factor[$ts_len] * $ts_duration;
 
+			//add first 
+			array_push($ranges[$range_count], $time_slices[$time_slice_keys[0]]);
+			
 			foreach($time_slices as $ts=>$s){
 
+				//check if reach end
 				if($ts == $time_slice_keys[count($time_slice_keys) - 1 ])
 					continue;
 
+				//check if next time slice not is contiguous
 				if(!isset($time_slices[$ts + $sec])){
 					$range_count++;
+					//create range
 					$ranges[$range_count] = array();
-
 				}
+
+				//add ts to range
 				array_push($ranges[$range_count], $time_slices[$ts + $sec]);
 			}
 		}
@@ -381,11 +420,10 @@ class OHLC {
 		foreach($ranges as $k=>$r){
 
 			//first
-			$start_ts = $r[0];
-			$count = count($start_ts);
-			$startTime = $start_ts;
+			$startTime = $r[0]['start'];
+
 			//last
-			$endTime = $r[count($r) - 1];
+			$endTime = $r[count($r) - 1]['end'];
 
 			//save
 			$ranges[$k]['startTime'] = $startTime;

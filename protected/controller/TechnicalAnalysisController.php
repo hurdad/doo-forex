@@ -34,12 +34,12 @@ class TechnicalAnalysisController extends DooController {
 		}
 		$bid_offer = isset($_GET['bid_offer']) ? $_GET['bid_offer'] : 'bid';
 
-		//open_high_low_close : optional (default : 'close')
+	/*	//open_high_low_close : optional (default : 'close')
 		if (isset($_GET['open_high_low_close']) && !preg_match('/^(open|high|low|close)$/', $_GET['open_high_low_close'])) {
 			die("Invalid open_high_low_close parameter: " . $_GET['open_high_low_close']);
 		}
 		$open_high_low_close = isset($_GET['open_high_low_close']) ? $_GET['open_high_low_close'] : 'close';
-
+*/
 		//function : required
 		$function = $_GET['function'];
 		if (!isset($_GET['function']) || !class_exists($function)) {
@@ -64,22 +64,26 @@ class TechnicalAnalysisController extends DooController {
 			//parse out fields
 			$arr = explode(',', $row);
 			$ts = substr($arr[0], 1);
+
+			$data[] = array('open' => $arr[1], 'high' => $arr[2], 'low' => $arr[3] , 'close' => $arr[4], 'datetime' => $ts);
+
+			/*
 			
 			switch($open_high_low_close){
 
 				case 'open':
-					$data[] = array('val' => $arr[1], 'datetime' => $ts);
+					$data[] = array('price' => $arr[1], 'datetime' => $ts);
 					break;
 				case 'high':
-					$data[] = array('val' => $arr[2], 'datetime' => $ts);
+					$data[] = array('price' => $arr[2], 'datetime' => $ts);
 					break;
 				case 'low':
-					$data[] = array('val' => $arr[3], 'datetime' => $ts);
+					$data[] = array('price' => $arr[3], 'datetime' => $ts);
 					break;
 				case 'close':
-					$data[] = array('val' => $arr[4], 'datetime' => $ts);
+					$data[] = array('price' => $arr[4], 'datetime' => $ts);
 					break;
-			}
+			}*/
 		}
 		
 		//push data as first param to generic run function
@@ -96,8 +100,13 @@ class TechnicalAnalysisController extends DooController {
 		$results = array();
 		foreach($ta_results as $row){
 			extract($row);
-			if(isset($SMA5))
-				$results[] = "[$datetime,$SMA5]";
+
+			if(isset($val2) && isset($val))
+				$results[] = "[$datetime,$val,$val2]";
+
+			else if(isset($val))
+				$results[] = "[$datetime,$val]";
+
 			
 		}
 

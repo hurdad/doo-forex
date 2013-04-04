@@ -11,12 +11,12 @@ class SMA{
 			if ($key >= $period){
 				$sum = 0;
 				for ($i = $key - ($period-1); $i <= $key; $i ++)
-					$sum += $data[$i]['val'];
+					$sum += $data[$i]['close'];
 			
 				$sma = $sum / $period;
 			
 				//add sma field and value
-				$data[$key]["SMA{$period}"] = $sma;
+				$data[$key]['val'] = $sma;
 			}
 		}
 		return $data;

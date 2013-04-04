@@ -45,7 +45,7 @@ class OHLCController extends DooController {
 		$results = $my_ohlc->get_ohlc($pair, $start, $end, $bid_offer, $timeslice);
 
 		// print it
-		header('Content-Type: text/javascript');
+		$this->setContentType('js');
 		echo "/* console.log(' start = $start, end = $end, startTime = $startTime, endTime = $endTime '); */";
 		echo $callback ."([\n" . join(",\n", $results)."\n]);";
 	}

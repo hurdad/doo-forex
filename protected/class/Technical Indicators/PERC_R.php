@@ -1,14 +1,13 @@
 <?php
 /* 
-* Reference: http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:stochastic_oscillato
+* Reference: http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:williams_r
 */
-class STOCH{
+class PERC_R{
 
-	static function run($data, $period = 14, $sma_period = 3){
+	static function run($data, $period = 14){
 
 		$high_array = array();
 		$low_array = array();
-		$k_array = array();
 
 		//loop data
 		foreach($data as $key => $row){
@@ -27,7 +26,7 @@ class STOCH{
 			if(count($low_array) > $period)
 				array_pop($low_array);
 
-			//have enough data to calc stoch
+			//have enough data to calc perc r
 			if($key >= $period){
 				//max of highs
 				$init = $high_array[0];
@@ -43,34 +42,13 @@ class STOCH{
 					    return $v;
 					}, $init);
 
-				//calc
-				$k  = ($data[$key]['close'] - $l) / ( $h - $l) * 100;
-
-				//add to front
-				array_unshift($k_array, $k);
-
-				//pop back if too long
-				if(count($k_array) > $sma_period)
-					array_pop($k_array);
+				//calc percent R
+				$perc_r  = ($h - $data[$key]['close']) / ( $h - $l)  * -100;
 				
 				//save
-				$data[$key]['val'] = $k;
+				$data[$key]['val'] = $perc_r;
 			}
 
-			//have enough data to calc sma
-			if(count($k_array) == $sma_period){
-				
-				//k moving average 
-				$sum = array_reduce($k_array, function($result, $item) { 
-					    $result += $item;
-					    return $result;
-					}, 0);
-
-				$sma = $sum / $sma_period;
-
-				//save
-				$data[$key]['val2'] = $sma;
-			}
 		}
 		return $data;
 	}

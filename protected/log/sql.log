@@ -1,0 +1,280 @@
+2013-04-03 08:44:19 : SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-02 23:59:59' GROUP BY 1
+			ORDER BY datetime2013-04-03 08:44:55 : SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-02 23:59:59' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:15:37 : SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-02 23:59:59' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:15:50 : SELECT 
+			    pair,
+			    FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / 600) * 600) AS 'timeslice',
+			    UNIX_TIMESTAMP( FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / 600) * 600) ) * 1000 as 'datetime',
+			    MIN(bid) as 'low',
+			    MAX(bid) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    count(*) as 'vol'
+			FROM
+			    quotes
+			WHERE
+			    pair = 'EUR/USD'  AND ts BETWEEN '2013-03-30 00:00:00' and '2013-04-03 09:09:59' GROUP BY timeslice
+			ORDER BY datetime
+2013-04-03 09:16:03 : SELECT 
+			    pair,
+			    FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / 600) * 600) AS 'timeslice',
+			    UNIX_TIMESTAMP( FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / 600) * 600) ) * 1000 as 'datetime',
+			    MIN(bid) as 'low',
+			    MAX(bid) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    count(*) as 'vol'
+			FROM
+			    quotes
+			WHERE
+			    pair = 'EUR/USD'  AND ts BETWEEN '2013-03-30 00:00:00' and '2013-04-03 09:09:59' GROUP BY timeslice
+			ORDER BY datetime
+2013-04-03 09:16:11 : SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-02 23:59:59' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:16:21 : SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-02 23:59:59' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:16:36 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '' and '' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:16:44 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '' and '' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:18:53 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '' and '' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:19:13 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '' and '' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:20:59 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFMONTH(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-03 09:20:59' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:21:13 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-03 09:21:13' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:25:34 : SELECT ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY) timeslice, UNIX_TIMESTAMP(ADDDATE(ts, INTERVAL 1-DAYOFWEEK(ts) DAY)) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-09-03 00:00:00' and '2013-04-03 09:25:34' GROUP BY 1
+			ORDER BY datetime
+2013-04-03 09:48:01 : SELECT 
+				pair,
+				FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / 21600) * 21600) AS 'timeslice',
+			  	UNIX_TIMESTAMP(FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(ts) / 21600) * 21600) ) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_hour
+			WHERE
+			     pair = 'EUR/USD'  AND ts BETWEEN '2013-02-08 18:00:00' and '2013-04-01 05:59:59' GROUP BY timeslice
+			ORDER BY datetime
+2013-04-03 09:48:01 : SELECT ts, UNIX_TIMESTAMP(ts) * 1000 as 'datetime',
+			    MIN(bid_low) as 'low',
+			    MAX(bid_high) as 'high',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_open ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            + 1) AS 'open',
+			    SUBSTRING_INDEX(GROUP_CONCAT(bid_close ORDER BY ts
+			                SEPARATOR ','),
+			            ',',
+			            - 1) AS 'close',
+			    SUM(vol) as 'vol'
+			FROM
+			    agg_day
+			WHERE
+				pair = 'EUR/USD'  AND ts BETWEEN '2012-10-30 00:00:00' and '2013-04-01 23:59:59' GROUP BY 1
+			ORDER BY datetime
