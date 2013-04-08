@@ -4,6 +4,11 @@
 */
 class STOCH{
 
+
+	static function lag($period = 14, $sma_period = 3){
+		return $period - 1 + $sma_period - 1;
+	}
+
 	static function run($data, $period = 14, $sma_period = 3){
 
 		$high_array = array();

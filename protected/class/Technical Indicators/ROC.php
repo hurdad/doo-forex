@@ -4,6 +4,10 @@
 */
 class ROC{
 
+	static function lag($period = 14){
+		return $period;
+	}
+	
 	static function run($data, $period = 12){
 
 		$close_array = array();

@@ -4,6 +4,10 @@
 */
 class Bull_Bear_Power{
 
+	static function lag($period = 13){
+		return $period  - 1;
+	}
+
 	static function run($data, $period = 13){
 	
 		$smoothing_constant = 2 / ($period + 1);

@@ -4,6 +4,10 @@
 */
 class ADX{
 
+	static function lag($period = 14){
+		return ($period * 2) - 1;
+	}
+
 	static function run($data, $period = 14){
 
 		$true_range_array = array();

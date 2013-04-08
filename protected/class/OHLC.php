@@ -2,7 +2,7 @@
 
 class OHLC {
 
-	public function get_ohlc($pair, $start, $end, $bid_offer, $timeslice){
+	public function get_ohlc($pair, $start, $end, $bid_offer, $timeslice, $lag = 0){
 
 		//to seconds factor lookup
 		$this->to_seconds_factor['s'] = 1;
@@ -108,7 +108,31 @@ class OHLC {
 		//check are not cacheing week and month
 		$is_caching = in_array($ts_len, array('w', 'M')) ? false : true;
 
-		//if no week or Month round start/end time to match candle length
+		//add lag
+		if($lag > 0){
+			if(!in_array($ts_len, array('w', 'M'))){
+
+				//to sec
+				$sec = $this->to_seconds_factor[$ts_len] * $ts_duration;
+
+				//lag start 
+				$start = (ceil(($start / 1000) / $sec) * $sec) - ($sec * $lag);
+			}else{
+				if($ts_len == 'w'){
+					$date = date_create_from_format('U', $start);
+					date_sub($date, date_interval_create_from_date_string("$lag weeks"));
+				}
+				if($ts_len == 'M'){
+					$date = date_create_from_format('U', $start);
+					date_sub($date, date_interval_create_from_date_string("$lag months"));
+				}
+
+				//save new start
+				$start = date_format($date, 'U');
+			}
+		}
+
+		//if no week or Month, round start/end time to match candle length
 		if(!in_array($ts_len, array('w', 'M'))){
 
 			//to sec

@@ -4,6 +4,10 @@
 */
 class PERC_R{
 
+	static function lag($period = 14){
+		return $period - 1;
+	}
+	
 	static function run($data, $period = 14){
 
 		$high_array = array();

@@ -4,6 +4,10 @@
 */
 class RSI{
 
+	static function lag($period = 14){
+		return $period;
+	}
+	
 	static function run($data, $period = 14){
 
 		$change_array = array();

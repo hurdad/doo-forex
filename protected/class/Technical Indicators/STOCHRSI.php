@@ -4,6 +4,10 @@
 */
 class STOCHRSI{
 
+	static function lag($period = 14){
+		return $period - 1;
+	}
+
 	static function run($data, $period = 14){
 
 		$change_array = array();

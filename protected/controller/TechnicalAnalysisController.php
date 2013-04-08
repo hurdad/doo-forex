@@ -34,12 +34,6 @@ class TechnicalAnalysisController extends DooController {
 		}
 		$bid_offer = isset($_GET['bid_offer']) ? $_GET['bid_offer'] : 'bid';
 
-	/*	//open_high_low_close : optional (default : 'close')
-		if (isset($_GET['open_high_low_close']) && !preg_match('/^(open|high|low|close)$/', $_GET['open_high_low_close'])) {
-			die("Invalid open_high_low_close parameter: " . $_GET['open_high_low_close']);
-		}
-		$open_high_low_close = isset($_GET['open_high_low_close']) ? $_GET['open_high_low_close'] : 'close';
-*/
 		//function : required
 		$function = $_GET['function'];
 		if (!isset($_GET['function']) || !class_exists($function)) {
@@ -53,9 +47,14 @@ class TechnicalAnalysisController extends DooController {
 		//force timeslice [s,m,h,d,w,M]
 		$timeslice = isset($_GET['timeslice']) ? $_GET['timeslice'] : null;
 
+		//get extra rows needed to calculate fuction
+		$lag = call_user_func_array(array($function, "lag"), $function_param_arr);
+		if(!$lag)
+			$lag = 0;
+
 		//get data
 		$my_ohlc = new OHLC();
-		$results = $my_ohlc->get_ohlc($pair, $start, $end, $bid_offer, $timeslice);
+		$results = $my_ohlc->get_ohlc($pair, $start, $end, $bid_offer, $timeslice, $lag);
 
 		//build data 
 		$data = array();
@@ -66,24 +65,6 @@ class TechnicalAnalysisController extends DooController {
 			$ts = substr($arr[0], 1);
 
 			$data[] = array('open' => $arr[1], 'high' => $arr[2], 'low' => $arr[3] , 'close' => $arr[4], 'datetime' => $ts);
-
-			/*
-			
-			switch($open_high_low_close){
-
-				case 'open':
-					$data[] = array('price' => $arr[1], 'datetime' => $ts);
-					break;
-				case 'high':
-					$data[] = array('price' => $arr[2], 'datetime' => $ts);
-					break;
-				case 'low':
-					$data[] = array('price' => $arr[3], 'datetime' => $ts);
-					break;
-				case 'close':
-					$data[] = array('price' => $arr[4], 'datetime' => $ts);
-					break;
-			}*/
 		}
 		
 		//push data as first param to generic run function
