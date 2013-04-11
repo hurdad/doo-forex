@@ -3,7 +3,7 @@ doo-forex
 
 DooPHP Forex backend for enyo-forex charting frontend
 
-* Designed to be used with free forex data from http://truefx.com
+* Designed to be used with free forex data from http://truefx.com and highstock charts http://www.highcharts.com/products/highstock
 
 ##Objective:
 
