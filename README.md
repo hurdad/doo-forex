@@ -7,8 +7,8 @@ DooPHP Forex backend for enyo-forex charting frontend
 
 ##Objective:
 
-Load raw tick/quote data into a MySQL Database. API outputs aggregated candlestick data, including custom technical analysis indicators.
-All candlestick time windows [s,m,h,d,w,M] are supported. Candlestick data is cached on demand in local Redis instance (in memory) except for weekly and monthly timewindows.
+Load raw tick/quote data [realtime & historical] into a MySQL Database. API outputs aggregated candlestick data, including custom technical analysis indicators.
+All candlestick time windows [s,m,h,d,w,M] are supported. Candlestick data is cached on demand in local Redis instance (in memory) except for weekly and monthly time windows.
 * Custom Indicators can be built by adding a new class/file:
 
 ```
