@@ -84,7 +84,7 @@ php cli.php quote_aggregator day EUR/USD '2012-01-01'
 
 ```
 cd /usr/share/doo-forex
-screen -A -m -d -S forex php cli.php forex_update
+screen -A -m -d -S forex php cli.php forex_update 1
 ```
 
 ##JSONP API Rotues
