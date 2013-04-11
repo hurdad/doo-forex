@@ -80,7 +80,7 @@ Note: you will need to manually run hour & day aggregations for any backfill'd d
 php cli.php quote_aggregator day EUR/USD '2012-01-01'
 ```
 
-##Start Forex Update
+##Start Forex Update with hour and daily pre-aggregations enabled
 
 ```
 cd /usr/share/doo-forex
