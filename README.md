@@ -1,7 +1,19 @@
 doo-forex
 =========
 
-DooPHP Forex backend for enyo-forex
+DooPHP Forex backend for enyo-forex charting frontend
+
+* Designed to be used with free forex data from http://truefx.com
+
+##Objective:
+
+Load raw tick/quote data into a MySQL Database. API outputs aggregated candlestick data, including custom technical analysis indicators.
+All candlestick time windows [s,m,h,d,w,M] are supported. Candlestick data is cached on demand in local Redis instance (in memory) except for weekly and monthly timewindows.
+* Custom Indicators can be built by adding a new class/file:
+
+```
+doo-forex/protected/class/Technical Indicators/
+```
 
 ###Quick Start:
 
@@ -9,7 +21,7 @@ DooPHP Forex backend for enyo-forex
 
 * Install dependancies:
   * MySQL Server 5.6+ [requires millisecond datetime]
-  * Redis Server 2.4+ [used for cacheing]
+  * Redis Server 2.4+ [used for in memory on demand cache]
   * screen [optional for running forex updater]
   * php-cli
   * php-pdo
