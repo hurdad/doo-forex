@@ -37,17 +37,20 @@ $config['BASE_PATH'] = realpath('..').'/dooframework/';
 ```
 vi /etc/httpd/conf.d/doo-forex.conf
 ```
-
+Example configuration with install path : /usr/share/doo-forex and url : /doo-forex
 ```
 Alias /doo-forex /usr/share/doo-forex
 <Directory "/usr/share/doo-forex">
   AllowOverride All
 </Directory>
 ````
+Note: you will need to modify doo-forex/.htaccess 'RewriteBase' if you use another url
+
 * Install Database Schema
 
 ```
-php /usr/share/doo-forex/setup_db.php
+cd /usr/share/doo-forex
+php install_db.php
 ```
 
 ##Backfill Historical Data [Optional]
@@ -59,7 +62,7 @@ php /usr/share/doo-forex/setup_db.php
 cd /usr/share/doo-forex
 php cli.php forex_loader /path/to/EURUSD.csv
 ```
-  * Note: you will need to manually run hour & day aggregations for any backfill'd data
+Note: you will need to manually run hour & day aggregations for any backfill'd data
 
 ```
 php cli.php quote_aggregator day EUR/USD '2012-01-01'
