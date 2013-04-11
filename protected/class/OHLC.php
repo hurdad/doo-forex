@@ -2,6 +2,10 @@
 
 class OHLC {
 
+	function __construct() {
+      ini_set("memory_limit","512M");
+   	}
+
 	public function get_ohlc($pair, $start, $end, $bid_offer, $timeslice, $lag = 0){
 
 		//to seconds factor lookup
@@ -116,7 +120,8 @@ class OHLC {
 				$sec = $this->to_seconds_factor[$ts_len] * $ts_duration;
 
 				//lag start 
-				$start = (ceil(($start / 1000) / $sec) * $sec) - ($sec * $lag);
+				$start = ((ceil(($start / 1000) / $sec) * $sec) - ($sec * $lag)) * 1000;
+				
 			}else{
 				if($ts_len == 'w'){
 					$date = date_create_from_format('U', $start);
@@ -128,7 +133,7 @@ class OHLC {
 				}
 
 				//save new start
-				$start = date_format($date, 'U');
+				$start = date_format($date, 'U') * 1000;
 			}
 		}
 

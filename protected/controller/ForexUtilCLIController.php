@@ -4,18 +4,32 @@ class ForexUtilCLIController extends DooCLIController {
 
 	function forex_update() {
 
+        //check for args
+        if(count($this->arguments) != 2){
+            $this->writeLine("Usage: forex_update <run_aggregations 0/1>");
+            exit;
+        }
+        $run_aggs = $this->arguments[1];
+
+        //init
     	$current_timeperiod = array();
+
+        //loop forever
         while(1){
 
-            echo "UTC:".time() . PHP_EOL; 
+            $this->writeLine("UTC: ".time()); 
 
             $url = "http://webrates.truefx.com/rates/connect.html";
 
             $ch = curl_init();
             curl_setopt($ch,CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch,CURLOPT_HTTPHEADER,array('Content-Type: application/x-www-form-urlencoded'));
-            $data = curl_exec($ch);
+            curl_setopt($ch,CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+            if(!$data = curl_exec($ch)) { 
+                $this->writeLine("CURL ERROR: " . curl_error($ch)); 
+                curl_close($ch);
+                continue;
+            } 
             curl_close($ch);
 
             $pairCount = 0;
@@ -31,12 +45,11 @@ class ForexUtilCLIController extends DooCLIController {
             if($pairCount > 0){
                 $valueStr = $data;
 
-
                 $pairs = $this->parseIt($valueStr, 7, $pairCount);
                 $valueStr = substr($valueStr, $pairCount * 7);
 
                 $bidBigNumber = $this->parseIt($valueStr, 4, $pairCount);
-                $valueStr = substr($valueStr,$pairCount*4);
+                $valueStr = substr($valueStr,$pairCount * 4);
 
                 $bidPoints = $this->parseIt($valueStr, 3, $pairCount);
                 $valueStr = substr($valueStr, $pairCount * 3);
@@ -55,42 +68,44 @@ class ForexUtilCLIController extends DooCLIController {
                 $msTime = $this->parseIt($valueStr, 13, $pairCount);
                 $valueStr = substr($valueStr, $pairCount * 13);
 
-
+                //loop pairs
                 for($i = 0 ; $i < count($pairs); $i++){
-
 
                     $pair = $pairs[$i];
                     $bid = preg_replace('/#/', '', $bidBigNumber[$i]) . $bidPoints[$i];
                     $offer = preg_replace('/#/', '', $offerBigNumber[$i]) . $offerPoints[$i];
                     $time =  $msTime[$i];
 
+                    //run day  / hour aggs when rollover
+                    if($run_aggs){
 
-                    //first time set and go straight to sql
-                    if(!isset($current_timeperiod[$pair])){
-                        $current_timeperiod[$pair]['hour'] = date('Y-m-d H', $time/1000);
-                        $current_timeperiod[$pair]['day'] = date('Y-m-d', $time/1000);
-                    }else{
-
-                        //check if we need to do a hourly agg
-                        if($current_timeperiod[$pair]['hour'] != date('Y-m-d H', $time/1000) ){
-
-                            $date = $current_timeperiod[$pair]['hour'] . ":00:00";
-                            $cmd = "php cli.php quote_aggregator hour $pair '$date'";
-                            $p = new Process($cmd);
-                           
-                            //update
+                        //first time set and go straight to sql
+                        if(!isset($current_timeperiod[$pair])){
                             $current_timeperiod[$pair]['hour'] = date('Y-m-d H', $time/1000);
-                        }
-                       
-                        //check if we need to do a daily
-                        if($current_timeperiod[$pair]['day'] != date('Y-m-d', $time/1000)){
-                            
-                            $date = $current_timeperiod[$pair]['day'];
-                            $cmd = "php cli.php quote_aggregator day $pair '$date'";
-                            $p = new Process($cmd);
-
-                            //update
                             $current_timeperiod[$pair]['day'] = date('Y-m-d', $time/1000);
+                        }else{
+
+                            //check if we need to do a hourly agg
+                            if($current_timeperiod[$pair]['hour'] != date('Y-m-d H', $time/1000) ){
+
+                                $date = $current_timeperiod[$pair]['hour'] . ":00:00";
+                                $cmd = "php cli.php quote_aggregator hour $pair '$date'";
+                                $p = new Process($cmd);
+                               
+                                //update
+                                $current_timeperiod[$pair]['hour'] = date('Y-m-d H', $time/1000);
+                            }
+                           
+                            //check if we need to do a daily
+                            if($current_timeperiod[$pair]['day'] != date('Y-m-d', $time/1000)){
+                                
+                                $date = $current_timeperiod[$pair]['day'];
+                                $cmd = "php cli.php quote_aggregator day $pair '$date'";
+                                $p = new Process($cmd);
+
+                                //update
+                                $current_timeperiod[$pair]['day'] = date('Y-m-d', $time/1000);
+                            }
                         }
                     }
                     
@@ -214,7 +229,6 @@ class ForexUtilCLIController extends DooCLIController {
 
         if($day_hour == 'day'){
 
-
             $sql = "INSERT IGNORE INTO agg_day(
             SELECT 
                 pair,
@@ -242,14 +256,14 @@ class ForexUtilCLIController extends DooCLIController {
                             SEPARATOR ','),
                         ',',
                         - 1) AS 'offer_close',
-                COUNT(*)
+                COUNT(*) as 'vol'
             FROM
                 quotes
             WHERE pair = '$pair' AND ts BETWEEN '$datetime' AND '$datetime' + INTERVAL 1 DAY
             GROUP BY timeslice
             ORDER BY ts)";
 
-        }elseif($day_hour == 'hour'){
+        }else if($day_hour == 'hour'){
 
 
             $sql = "INSERT IGNORE INTO agg_hour(
@@ -280,7 +294,7 @@ class ForexUtilCLIController extends DooCLIController {
                             SEPARATOR ','),
                         ',',
                         - 1) AS `offerclose`,
-                COUNT(*)
+                COUNT(*) as 'vol'
             FROM
                 quotes
             WHERE  pair = '$pair' AND ts BETWEEN '$datetime' AND '$datetime' + INTERVAL 1 HOUR

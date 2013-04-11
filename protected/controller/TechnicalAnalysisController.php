@@ -61,33 +61,30 @@ class TechnicalAnalysisController extends DooController {
 		foreach($results as $row){
 
 			//parse out fields
-			$arr = explode(',', $row);
-			$ts = substr($arr[0], 1);
-
-			$data[] = array('open' => $arr[1], 'high' => $arr[2], 'low' => $arr[3] , 'close' => $arr[4], 'datetime' => $ts);
+			$arr = explode(',', substr($row, 1, strlen($row) - 2 ));
+			//sava
+			$data[] = array('open' => $arr[1], 'high' => $arr[2], 'low' => $arr[3] , 'close' => $arr[4], 'vol' => $arr[5], 'datetime' => $arr[0]);
 		}
 		
 		//push data as first param to generic run function
 		array_unshift($function_param_arr, $data);
 
-
-//var_dump($data); exit;
-
 		//pass to function
 		$ta_results = call_user_func_array(array($function, "run"), $function_param_arr);
 
-//var_dump($ta_results);
-
+		//Supports 3 return values from $function. Convert to json format
 		$results = array();
 		foreach($ta_results as $row){
 			extract($row);
 
-			if(isset($val2) && isset($val))
+			if(isset($val3) && isset($val2) && isset($val))
+				$results[] = "[$datetime,$val,$val2,$val3]";			
+
+			else if(isset($val2) && isset($val))
 				$results[] = "[$datetime,$val,$val2]";
 
 			else if(isset($val))
 				$results[] = "[$datetime,$val]";
-
 			
 		}
 

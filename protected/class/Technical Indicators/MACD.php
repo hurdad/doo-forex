@@ -4,8 +4,8 @@
 */
 class MACD{
 
-	static function lag($ema1 = 12, $ema2 = 26, $signal = 9)
-		return ( max($ema1, $ema2) + $signal ) - 1;
+	static function lag($ema1 = 12, $ema2 = 26, $signal = 9){
+		return (max($ema1, $ema2) + $signal) - 1;
 	}
 
 	static function run($data, $ema1 = 12, $ema2 = 26, $signal = 9){

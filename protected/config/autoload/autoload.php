@@ -10,6 +10,7 @@
   'Highs_Lows.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/Highs_Lows.php',
   'EMA.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/EMA.php',
   'UO.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/UO.php',
+  'VOL.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/VOL.php',
   'STOCH.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/STOCH.php',
   'ROC.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/ROC.php',
   'SMA.php' => '/usr/share/doo-forex/protected/class/Technical Indicators/SMA.php',
