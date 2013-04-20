@@ -32,7 +32,7 @@ doo-forex/protected/class/Technical Indicators/
 
 ```
 git clone https://github.com/hurdad/doo-forex.git /usr/share/doo-forex
-cd /usr/share/do-forex/protected/class/
+cd /usr/share/doo-forex/
 git submodule update --init
 ```
 * Configure Doo Framework path:
